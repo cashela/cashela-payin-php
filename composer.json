@@ -1,0 +1,12 @@
+{
+  "name": "cashela/payin",
+  "description": "Cashela Pay-In client SDK",
+  "type": "library",
+  "license": "MIT",
+  "require": { "php": ">=8.1", "ext-curl": "*", "ext-json": "*" },
+  "autoload": { "psr-4": { "Cashela\\PayIn\\": "src/" } },
+  "scripts": {
+    "test": "php tests/run.php",
+    "sync-vectors": "php scripts/sync-vectors.php"
+  }
+}
