@@ -4,6 +4,8 @@ require __DIR__ . '/../vendor/autoload.php';
 use Cashela\PayIn\Environment;
 use Cashela\PayIn\Webhook;
 use Cashela\PayIn\WebhookSignatureError;
+use Cashela\PayIn\CashelaPayIn;
+use Cashela\PayIn\CashelaApiError;
 
 $failures = 0;
 function check(string $name, bool $cond, int &$failures): void {
@@ -98,6 +100,25 @@ assertReason(
     'stale-timestamp',
     $failures
 );
+
+$cap = new stdClass();
+$fakeOk = function (string $m, string $u, array $h, ?string $b) use ($cap) {
+    $cap->method = $m; $cap->url = $u; $cap->headers = $h; $cap->body = $b;
+    return ['status' => 200, 'body' => json_encode(['success' => true, 'message' => 'ok', 'data' => ['reference' => 'r1']])];
+};
+$c = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeOk]);
+$c->getTransaction('r1');
+check('basic auth header', ($cap->headers['Authorization'] ?? '') === 'Basic ' . base64_encode('k:s'), $failures);
+check('sandbox url', $cap->url === 'https://sandbox-api.cashela.com/api/v1/pay-in/transactions/r1', $failures);
+$c->createDeposit(['external_identifier' => 'e1'], 'idem-1');
+check('idempotency header', ($cap->headers['Idempotency-Key'] ?? '') === 'idem-1', $failures);
+check('create is POST', $cap->method === 'POST', $failures);
+
+$fakeErr = fn($m, $u, $h, $b) => ['status' => 422, 'body' => json_encode(['success' => false, 'message' => 'bad field'])];
+$c2 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeErr]);
+$threw = false;
+try { $c2->getTransaction('r1'); } catch (CashelaApiError $e) { $threw = ($e->status === 422); }
+check('maps non-2xx to CashelaApiError(422)', $threw, $failures);
 
 echo ($failures === 0 ? "ALL PASS\n" : "{$failures} FAILURES\n");
 exit($failures === 0 ? 0 : 1);
