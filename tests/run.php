@@ -114,6 +114,11 @@ $c->createDeposit(['external_identifier' => 'e1'], 'idem-1');
 check('idempotency header', ($cap->headers['Idempotency-Key'] ?? '') === 'idem-1', $failures);
 check('create is POST', $cap->method === 'POST', $failures);
 
+$c->listCountries(['payment_types' => ['CARD', 'BANK']]);
+check('listCountries repeated-key query (no indexed keys)', str_contains($cap->url, 'payment_types=CARD&payment_types=BANK') && !str_contains($cap->url, 'payment_types%5B'), $failures);
+$c->listCountries();
+check('listCountries no-arg has no query string', $cap->url === 'https://sandbox-api.cashela.com/api/v1/pay-in/deposit-creation/countries', $failures);
+
 $fakeErr = fn($m, $u, $h, $b) => ['status' => 422, 'body' => json_encode(['success' => false, 'message' => 'bad field'])];
 $c2 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeErr]);
 $threw = false;

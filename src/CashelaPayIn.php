@@ -38,7 +38,13 @@ final class CashelaPayIn
 
     public function listCountries(array $params = []): array
     {
-        $qs = http_build_query($params);
+        $pairs = [];
+        foreach ($params as $key => $value) {
+            foreach ((array) $value as $v) {
+                $pairs[] = rawurlencode((string) $key) . '=' . rawurlencode((string) $v);
+            }
+        }
+        $qs = implode('&', $pairs);
         return $this->request('GET', '/deposit-creation/countries' . ($qs !== '' ? "?{$qs}" : ''));
     }
     public function listPaymentMethods(array $body): array { return $this->request('POST', '/deposit-creation/available-payment-methods', $body); }
