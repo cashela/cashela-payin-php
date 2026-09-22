@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "name": "valid",
+      "secret": "whsec_test_0123456789abcdef",
+      "timestamp": "1758518400",
+      "nonce": "8f14e45f-ceea-467d-9a0b-000000000001",
+      "body": "{\"ref\":\"payin-test-0001\",\"external_identifier\":\"kortex-0001\",\"status\":\"COMPLETED\",\"amount\":5,\"currency\":\"CLP\"}",
+      "expected_signature": "164d84f5b9954c676fa97f2a0b55f68ecd4a22c8ac7742ee524b58a16012aea6",
+      "expect_valid": true
+    },
+    {
+      "name": "tampered-body",
+      "secret": "whsec_test_0123456789abcdef",
+      "timestamp": "1758518400",
+      "nonce": "8f14e45f-ceea-467d-9a0b-000000000001",
+      "body": "{\"ref\":\"payin-test-0001\",\"external_identifier\":\"kortex-0001\",\"status\":\"CANCELLED\",\"amount\":5,\"currency\":\"CLP\"}",
+      "expected_signature": "164d84f5b9954c676fa97f2a0b55f68ecd4a22c8ac7742ee524b58a16012aea6",
+      "expect_valid": false
+    },
+    {
+      "name": "wrong-secret",
+      "secret": "whsec_test_wrong",
+      "timestamp": "1758518400",
+      "nonce": "8f14e45f-ceea-467d-9a0b-000000000001",
+      "body": "{\"ref\":\"payin-test-0001\",\"external_identifier\":\"kortex-0001\",\"status\":\"COMPLETED\",\"amount\":5,\"currency\":\"CLP\"}",
+      "expected_signature": "164d84f5b9954c676fa97f2a0b55f68ecd4a22c8ac7742ee524b58a16012aea6",
+      "expect_valid": false
+    },
+    {
+      "name": "stale-timestamp",
+      "secret": "whsec_test_0123456789abcdef",
+      "timestamp": "100",
+      "nonce": "8f14e45f-ceea-467d-9a0b-000000000001",
+      "body": "{\"ref\":\"payin-test-0001\",\"external_identifier\":\"kortex-0001\",\"status\":\"COMPLETED\",\"amount\":5,\"currency\":\"CLP\"}",
+      "expected_signature": "d151f7b3db22725c847992589b49eb0699da96ee6e8d9bb0fedcbca36be49f24",
+      "expect_valid": false,
+      "tolerance_seconds": 300
+    }
+  ]
+}
