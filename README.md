@@ -2,6 +2,10 @@
 
 PHP SDK for the Cashela Pay-In API. PHP 8.1+, zero runtime dependencies (uses only `ext-curl` and `ext-json`).
 
+Targets Pay-In contract **2.0.0** (`cashela/cashela-payin-contract`). The SDK never reads the
+`role`/`grant` envelope keys that 2.0.0 removed; errors use the single `{success:false, message}`
+envelope (plus `errors` on a validation 422).
+
 ## Install
 
 ```bash
@@ -61,7 +65,8 @@ try {
     exit;
 }
 
-// ... handle $payload (e.g. update the order matching $payload['reference'])
+// ... handle $payload (e.g. update the order matching $payload['ref'])
+// $payload['status'] is one of COMPLETED | DECLINED | CANCELLED | REVERSED
 http_response_code(200);
 ```
 
