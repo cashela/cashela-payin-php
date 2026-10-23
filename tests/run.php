@@ -119,6 +119,27 @@ check('listCountries repeated-key query (no indexed keys)', str_contains($cap->u
 $c->listCountries();
 check('listCountries no-arg has no query string', $cap->url === 'https://sandbox-api.cashela.com/api/v1/pay-in/deposit-creation/countries', $failures);
 
+$B = 'https://sandbox-api.cashela.com/api/v1/pay-in';
+$cap->method = null;
+$fakeList = function (string $m, string $u, array $h, ?string $b) use ($cap) {
+    $cap->method = $m; $cap->url = $u;
+    return ['status' => 200, 'body' => json_encode(['success' => true, 'data' => [], 'next_cursor' => 'abc'])];
+};
+$c3 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeList]);
+$r = $c3->listTransactions(['status' => 'COMPLETED', 'country' => null, 'external_identifier' => '', 'limit' => 10, 'cursor' => 'a b']);
+check('listTransactions GET + query drops null/empty', $cap->method === 'GET' && $cap->url === "$B/transactions?status=COMPLETED&limit=10&cursor=a+b", $failures);
+check('listTransactions next_cursor passthrough', ($r['next_cursor'] ?? null) === 'abc', $failures);
+$c3->listTransactions();
+check('listTransactions no query', $cap->url === "$B/transactions", $failures);
+$c3->getWallet();
+check('getWallet', $cap->method === 'GET' && $cap->url === "$B/wallet", $failures);
+$r = $c3->listWalletMovements(['from' => '2026-01-01', 'type' => 'DEPOSIT', 'currency' => 'USD']);
+check('listWalletMovements', $cap->url === "$B/wallet/movements?from=2026-01-01&type=DEPOSIT&currency=USD" && ($r['next_cursor'] ?? null) === 'abc', $failures);
+$c3->listSettlements(['to' => '2026-02-01', 'limit' => 5]);
+check('listSettlements', $cap->url === "$B/settlements?to=2026-02-01&limit=5", $failures);
+$c3->getSettlement('a/b c');
+check('getSettlement encodes id', $cap->url === "$B/settlements/a%2Fb%20c", $failures);
+
 $fakeErr = fn($m, $u, $h, $b) => ['status' => 422, 'body' => json_encode(['success' => false, 'message' => 'bad field'])];
 $c2 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeErr]);
 $threw = false;

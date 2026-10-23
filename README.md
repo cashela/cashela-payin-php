@@ -42,6 +42,23 @@ try {
 }
 ```
 
+## Reporting reads (0.2.0)
+
+Read-only endpoints (credential scope `pay-in.read`). Listings return the decoded body with
+`data` and a top-level `next_cursor` (null on the last page); null/empty params are dropped.
+
+```php
+$page = $client->listTransactions(['status' => 'COMPLETED', 'from' => '2026-01-01', 'limit' => 50]);
+while ($page['next_cursor'] ?? null) {
+    $page = $client->listTransactions(['limit' => 50, 'cursor' => $page['next_cursor']]);
+}
+
+$wallet = $client->getWallet();
+$moves = $client->listWalletMovements(['type' => 'DEPOSIT', 'currency' => 'USD']);
+$settlements = $client->listSettlements(['from' => '2026-01-01']);
+$one = $client->getSettlement($settlements['data'][0]['id']);
+```
+
 ## Verifying webhooks
 
 `Webhook::verify()` checks the HMAC signature over the **raw** request body and returns the

@@ -56,6 +56,16 @@ final class CashelaPayIn
         return $this->request('POST', '/deposit-creation', $request, $extra);
     }
     public function getTransaction(string $reference): array { return $this->request('GET', '/transactions/' . rawurlencode($reference)); }
+    private static function query(array $params): string
+    {
+        $qs = http_build_query(array_filter($params, fn($v) => $v !== null && $v !== ''));
+        return $qs !== '' ? "?{$qs}" : '';
+    }
+    public function listTransactions(array $params = []): array { return $this->request('GET', '/transactions' . self::query($params)); }
+    public function getWallet(): array { return $this->request('GET', '/wallet'); }
+    public function listWalletMovements(array $params = []): array { return $this->request('GET', '/wallet/movements' . self::query($params)); }
+    public function listSettlements(array $params = []): array { return $this->request('GET', '/settlements' . self::query($params)); }
+    public function getSettlement(string $id): array { return $this->request('GET', '/settlements/' . rawurlencode($id)); }
     public function resendCallback(string $reference): array { return $this->request('POST', '/transactions/' . rawurlencode($reference) . '/callback'); }
 
     private function curlTransport(string $method, string $url, array $headers, ?string $body): array

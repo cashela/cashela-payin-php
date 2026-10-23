@@ -10,8 +10,8 @@
 ## Steps
 1. Tag a release (Packagist derives versions from git tags):
    ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
+   git tag v0.2.0
+   git push origin v0.2.0
    ```
 2. Go to https://packagist.org, click **Submit**, and paste:
    `https://github.com/cashela/cashela-payin-php`
