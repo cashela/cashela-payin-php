@@ -140,6 +140,9 @@ check('listSettlements', $cap->url === "$B/settlements?to=2026-02-01&limit=5", $
 $c3->getSettlement('a/b c');
 check('getSettlement encodes id', $cap->url === "$B/settlements/a%2Fb%20c", $failures);
 
+$c->verifyBankAccount(['bank_routing_number' => '011000015', 'bank_account_number' => '123456789']);
+check('verifyBankAccount is POST /bank-accounts/verify', $cap->method === 'POST' && str_ends_with($cap->url, '/pay-in/bank-accounts/verify'), $failures);
+
 $fakeErr = fn($m, $u, $h, $b) => ['status' => 422, 'body' => json_encode(['success' => false, 'message' => 'bad field'])];
 $c2 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeErr]);
 $threw = false;
