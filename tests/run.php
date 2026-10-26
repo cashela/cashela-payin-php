@@ -119,6 +119,9 @@ check('listCountries repeated-key query (no indexed keys)', str_contains($cap->u
 $c->listCountries();
 check('listCountries no-arg has no query string', $cap->url === 'https://sandbox-api.cashela.com/api/v1/pay-in/deposit-creation/countries', $failures);
 
+$c->verifyBankAccount(['bank_routing_number' => '011000015', 'bank_account_number' => '123456789']);
+check('verifyBankAccount is POST /bank-accounts/verify', $cap->method === 'POST' && str_ends_with($cap->url, '/pay-in/bank-accounts/verify'), $failures);
+
 $fakeErr = fn($m, $u, $h, $b) => ['status' => 422, 'body' => json_encode(['success' => false, 'message' => 'bad field'])];
 $c2 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeErr]);
 $threw = false;

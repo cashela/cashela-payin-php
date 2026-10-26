@@ -49,6 +49,8 @@ final class CashelaPayIn
     }
     public function listPaymentMethods(array $body): array { return $this->request('POST', '/deposit-creation/available-payment-methods', $body); }
     public function getExchangeRates(array $body): array { return $this->request('POST', '/deposit-creation/exchange-rates', $body); }
+    /** Is a US bank account open? Checked once, then answered from the stored verdict (`cached`). */
+    public function verifyBankAccount(array $body): array { return $this->request('POST', '/bank-accounts/verify', $body); }
     public function createDeposit(array $request, ?string $idempotencyKey = null): array
     {
         // Never retry this POST: retrying after the deposit opened risks a double charge.
