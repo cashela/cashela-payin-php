@@ -77,6 +77,20 @@ final class CashelaPayIn
     public function voidTransaction(string $reference, array $body = []): array { return $this->request('POST', '/transactions/' . rawurlencode($reference) . '/void', $body); }
     /** Pays a settled deposit back (contract 4.0.0). Whole transaction, no amount. Moves money; never retried. */
     public function refundTransaction(string $reference, array $body = []): array { return $this->request('POST', '/transactions/' . rawurlencode($reference) . '/refund', $body); }
+    /** SANDBOX ONLY: drive your own deposit to a final status. */
+    public function simulateTransaction(string $reference, string $status): array { return $this->request('POST', '/sandbox/transactions/' . rawurlencode($reference) . '/simulate', ['status' => $status]); }
+    /** Stores a PINless debit card (raw card data: only from a PCI-scoped server). Idempotent with $idempotencyKey. */
+    public function createPaymentInstrument(array $body, ?string $idempotencyKey = null): array
+    {
+        return $this->request('POST', '/payment-instruments', $body, $idempotencyKey === null ? [] : ['Idempotency-Key' => $idempotencyKey]);
+    }
+    public function listPaymentInstruments(): array { return $this->request('GET', '/payment-instruments'); }
+    /** Opens a hosted card capture, so card data never reaches your server. */
+    public function openCheckoutSession(): array { return $this->request('POST', '/payment-instruments/checkout-session'); }
+    /** Stores a card from the temporary token the hosted capture returned. */
+    public function storePaymentInstrumentFromCheckout(array $body): array { return $this->request('POST', '/payment-instruments/checkout', $body); }
+    /** Revokes a stored card. */
+    public function deletePaymentInstrument(string $paymentInstrumentId): array { return $this->request('DELETE', '/payment-instruments/' . rawurlencode($paymentInstrumentId)); }
     public function resendCallback(string $reference): array { return $this->request('POST', '/transactions/' . rawurlencode($reference) . '/callback'); }
 
     private function curlTransport(string $method, string $url, array $headers, ?string $body): array
