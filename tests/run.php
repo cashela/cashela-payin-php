@@ -143,6 +143,21 @@ check('getSettlement encodes id', $cap->url === "$B/settlements/a%2Fb%20c", $fai
 $c->verifyBankAccount(['bank_routing_number' => '011000015', 'bank_account_number' => '123456789']);
 check('verifyBankAccount is POST /bank-accounts/verify', $cap->method === 'POST' && str_ends_with($cap->url, '/pay-in/bank-accounts/verify'), $failures);
 
+$bodies = new stdClass();
+$fakeBody = function (string $m, string $u, array $h, ?string $b) use ($cap, $bodies) {
+    $cap->method = $m; $cap->url = $u; $bodies->last = $b;
+    return ['status' => 200, 'body' => json_encode(['success' => true, 'data' => []])];
+};
+$c4 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeBody]);
+$c4->getLimits();
+check('getLimits', $cap->method === 'GET' && $cap->url === "$B/limits", $failures);
+$c4->getReversalOptions('a/b');
+check('getReversalOptions encodes reference', $cap->method === 'GET' && $cap->url === "$B/transactions/a%2Fb/reversal-options", $failures);
+$c4->voidTransaction('r1', ['reason' => 'duplicate']);
+check('voidTransaction POST with reason', $cap->method === 'POST' && $cap->url === "$B/transactions/r1/void" && $bodies->last === '{"reason":"duplicate"}', $failures);
+$c4->refundTransaction('r1');
+check('refundTransaction empty body is {} not []', $cap->method === 'POST' && $cap->url === "$B/transactions/r1/refund" && $bodies->last === '{}', $failures);
+
 $fakeErr = fn($m, $u, $h, $b) => ['status' => 422, 'body' => json_encode(['success' => false, 'message' => 'bad field'])];
 $c2 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeErr]);
 $threw = false;
