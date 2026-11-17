@@ -158,6 +158,19 @@ check('voidTransaction POST with reason', $cap->method === 'POST' && $cap->url =
 $c4->refundTransaction('r1');
 check('refundTransaction empty body is {} not []', $cap->method === 'POST' && $cap->url === "$B/transactions/r1/refund" && $bodies->last === '{}', $failures);
 
+$c4->simulateTransaction('r/1', 'COMPLETED');
+check('simulateTransaction', $cap->method === 'POST' && $cap->url === "$B/sandbox/transactions/r%2F1/simulate" && $bodies->last === '{"status":"COMPLETED"}', $failures);
+$c4->createPaymentInstrument(['direction' => 'PAYIN'], 'i1');
+check('createPaymentInstrument', $cap->method === 'POST' && $cap->url === "$B/payment-instruments", $failures);
+$c4->listPaymentInstruments();
+check('listPaymentInstruments', $cap->method === 'GET' && $cap->url === "$B/payment-instruments", $failures);
+$c4->openCheckoutSession();
+check('openCheckoutSession', $cap->method === 'POST' && $cap->url === "$B/payment-instruments/checkout-session", $failures);
+$c4->storePaymentInstrumentFromCheckout(['checkout_token' => 't']);
+check('storePaymentInstrumentFromCheckout', $cap->url === "$B/payment-instruments/checkout", $failures);
+$c4->deletePaymentInstrument('p/1');
+check('deletePaymentInstrument', $cap->method === 'DELETE' && $cap->url === "$B/payment-instruments/p%2F1", $failures);
+
 $fakeErr = fn($m, $u, $h, $b) => ['status' => 422, 'body' => json_encode(['success' => false, 'message' => 'bad field'])];
 $c2 = new CashelaPayIn(['environment' => 'sandbox', 'apiKey' => 'k', 'apiSecret' => 's', 'transport' => $fakeErr]);
 $threw = false;
