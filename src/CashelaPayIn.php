@@ -25,7 +25,8 @@ final class CashelaPayIn
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ], $extraHeaders);
-        $payload = $body === null ? null : json_encode($body);
+        // An empty PHP array would encode as `[]`; every body of this API is a JSON object.
+        $payload = $body === null ? null : ($body === [] ? '{}' : json_encode($body));
         $res = ($this->transport)($method, $this->baseUrl . $path, $headers, $payload);
         $json = json_decode((string) $res['body'], true);
         $status = (int) $res['status'];
@@ -68,6 +69,14 @@ final class CashelaPayIn
     public function listWalletMovements(array $params = []): array { return $this->request('GET', '/wallet/movements' . self::query($params)); }
     public function listSettlements(array $params = []): array { return $this->request('GET', '/settlements' . self::query($params)); }
     public function getSettlement(string $id): array { return $this->request('GET', '/settlements/' . rawurlencode($id)); }
+    /** Your own limits and what is left of them. */
+    public function getLimits(): array { return $this->request('GET', '/limits'); }
+    /** Can this deposit be voided or refunded, and what does the reversal need (e.g. a bank account)? */
+    public function getReversalOptions(string $reference): array { return $this->request('GET', '/transactions/' . rawurlencode($reference) . '/reversal-options'); }
+    /** Cancels a deposit before it settles (contract 4.0.0). Whole transaction, no amount. Moves money; never retried. */
+    public function voidTransaction(string $reference, array $body = []): array { return $this->request('POST', '/transactions/' . rawurlencode($reference) . '/void', $body); }
+    /** Pays a settled deposit back (contract 4.0.0). Whole transaction, no amount. Moves money; never retried. */
+    public function refundTransaction(string $reference, array $body = []): array { return $this->request('POST', '/transactions/' . rawurlencode($reference) . '/refund', $body); }
     public function resendCallback(string $reference): array { return $this->request('POST', '/transactions/' . rawurlencode($reference) . '/callback'); }
 
     private function curlTransport(string $method, string $url, array $headers, ?string $body): array
