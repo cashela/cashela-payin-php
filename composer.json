@@ -2,7 +2,7 @@
   "name": "cashela/payin",
   "description": "Cashela Pay-In client SDK",
   "type": "library",
-  "license": "MIT",
+  "license": "proprietary",
   "require": { "php": ">=8.1", "ext-curl": "*", "ext-json": "*" },
   "autoload": { "psr-4": { "Cashela\\PayIn\\": "src/" } },
   "scripts": {
