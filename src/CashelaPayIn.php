@@ -4,6 +4,9 @@ namespace Cashela\PayIn;
 
 final class CashelaPayIn
 {
+    /** Version of the published Pay-In contract (cashela-payin-contract) this SDK covers. */
+    public const CONTRACT_VERSION = '4.0.0';
+
     private string $baseUrl;
     private string $auth;
     private int $timeoutMs;
