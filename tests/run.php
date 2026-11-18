@@ -177,5 +177,7 @@ $threw = false;
 try { $c2->getTransaction('r1'); } catch (CashelaApiError $e) { $threw = ($e->status === 422); }
 check('maps non-2xx to CashelaApiError(422)', $threw, $failures);
 
+check('declares the contract version it covers', CashelaPayIn::CONTRACT_VERSION === '4.0.0', $failures);
+
 echo ($failures === 0 ? "ALL PASS\n" : "{$failures} FAILURES\n");
 exit($failures === 0 ? 0 : 1);
