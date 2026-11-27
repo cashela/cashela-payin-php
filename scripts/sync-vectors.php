@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-$src = __DIR__ . '/../../cashela-payin-contract/test-vectors/webhook-signatures.json';
+$src = __DIR__ . '/../../../cashela-payin-contract/test-vectors/webhook-signatures.json';
 $dst = __DIR__ . '/../tests/fixtures/webhook-signatures.json';
 if (!is_file($src)) { fwrite(STDERR, "contract vectors not found at {$src}\n"); exit(1); }
 $upstream = file_get_contents($src);
